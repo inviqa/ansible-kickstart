@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+
+function _echo() {
+  echo -e "\033[1m\n${1}\n\033[0m";
+  tput sgr0;
+}
+
+function _command_exists() {
+  local COMMAND=${1};
+  command -v "${COMMAND}" >/dev/null 2>&1  || return 1;
+}
+
+function _install_ansible_osx() {
+  easy_install pip;
+  pip install virtualenv;
+  touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress ;
+  softwareupdate -i -a;
+  pip install ansible;
+}
+function _install_ansible_venv(){
+  local ANSIBLE_INSTALLER_URI="https://raw.githubusercontent.com/shrikeh/ansible-virtualenv/master/init.sh";
+  local ANSIBLE_CHECKOUT_PATH="./.ansible";
+  local ANSIBLE_VENV="venv";
+  export PYTHONPATH="${ANSIBLE_CHECKOUT_PATH}/lib"
+
+  _echo "Installing Ansible on host";
+  curl -L --silent "${ANSIBLE_INSTALLER_URI}" | bash -s -- \
+    -d "${ANSIBLE_CHECKOUT_PATH}" \
+    --venv "${ANSIBLE_VENV}" \
+    --branch "${ANSIBLE_VERSION}" \
+    --yolo
+
+}
+
+function _install_ansible() {
+  case "$OSTYPE" in
+    solaris*) echo "Ansible installation not available for OS TYPE $OSTYPE" ;;
+    darwin*)  _install_ansible_osx ;;
+    linux*)   _install_ansible_linux ;;
+    bsd*)     echo "Ansible installation not available for OS TYPE $OSTYPE" ; exit 1;;
+    msys*)    echo "Ansible installation not available for OS TYPE $OSTYPE" ; exit 1;;
+    *)        echo "Ansible installation not available for OS TYPE $OSTYPE" ; exit 1;;
+  esac
+}
+
+function _retrive_args() {
+  INSTALL_ANSIBLE_VENV=false
+  ANSIBLE_VERSION="devel";
+  ASK_BECOME_PASS="";
+  PROVISION_SCRIPT_DIR="$( dirname "$( which "$0" )" )";
+
+  local -a ARGV=("${!1}");
+  while [[ "${#}" > 0 ]]; do
+    key="${1}";
+    case $key in
+      --install-ansible-venv )
+        INSTALL_ANSIBLE_VENV=true;
+        ANSIBLE_VERSION="${2}";
+      shift
+      ;;
+      --ansible-version )
+        INSTALL_ANSIBLE_VENV=true;
+      shift
+      ;;
+      --venv)
+        ANSIBLE_VENV="${2}";
+      shift
+      ;;
+      *)
+              # unknown option
+      ;;
+  esac
+    shift
+  done
+
+}
+
+function _check_requirements(){
+  EXCEPTION_CAUGHT=false
+  if [[ "$OSTYPE" == darwin* ]]; then
+      if ! _command_exists "easy_install"; then
+        _echo "ERROR: Cannot find required tool \"easy_install\""
+        EXCEPTION_CAUGHT=true
+      fi
+  fi
+  if ! _command_exists "curl"; then
+    _echo "ERROR: Cannot find required tool \"curl\""
+    EXCEPTION_CAUGHT=true
+  fi
+  if ! _command_exists "git"; then
+    _echo "WARNING: Cannot find required tool \"git\": some functionality might not work"
+  fi
+  if ! _command_exists "pip"; then
+    _echo "WARNING: Cannot find required tool \"pip\": some functionality might not work"
+  fi
+  if $EXCEPTION_CAUGHT; then
+    echo "Kickstart Aborted"
+    exit 1
+  fi
+}
+
+_retrive_args "${@}";
+_check_requirements;
+
+if [ $INSTALL_ANSIBLE_VENV = true ];then
+  _install_ansible_venv;
+else
+  _install_ansible;
+  echo "AA"
+fi
