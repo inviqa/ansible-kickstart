@@ -88,6 +88,7 @@ function _install_ansible_provision() {
 
 function _launch_ansible_provision() {
   _echo "Running Inviqa's Ansible Provisioning script from '${ANSIBLE_BASE_DIR}'";
+  echo "$PWD/${ANSIBLE_PROVISION_DIR}/ansible-provision -p $PWD/${ANSIBLE_BASE_DIR}/playbook.yml --rfile $PWD/${ANSIBLE_PROVISION_DIR}/requirements.pip.txt2  -l localhost -rpath $PWD/${ANSIBLE_BASE_DIR}/.galaxy"
   $PWD/${ANSIBLE_PROVISION_DIR}/ansible-provision -p $PWD/${ANSIBLE_BASE_DIR}/playbook.yml --rfile $PWD/${ANSIBLE_PROVISION_DIR}/requirements.pip.txt2  -l localhost -rpath $PWD/${ANSIBLE_BASE_DIR}/.galaxy
 }
 
