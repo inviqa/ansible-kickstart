@@ -82,15 +82,13 @@ function _install_ansible() {
 
 function _install_ansible_provision() {
   _echo "Installing Inviqa's Ansible Provisioning script from '${ANSIBLE_PROVISION_REPO}' into '${ANSIBLE_PROVISION_DIR}'";
-  echo "PWD: $PWD"
   git clone --quiet "${ANSIBLE_PROVISION_REPO}" "${ANSIBLE_PROVISION_DIR}";
   chmod 755 "${ANSIBLE_PROVISION_DIR}/ansible-provision"
 }
 
 function _launch_ansible_provision() {
   _echo "Running Inviqa's Ansible Provisioning script from '${ANSIBLE_BASE_DIR}'";
-  echo "PWD: $PWD"
-  $PWD/${ANSIBLE_PROVISION_DIR}/ansible-provision -p $PWD/${ANSIBLE_BASE_DIR}/playbook.yml -rfile $PWD/${ANSIBLE_BASE_DIR}/requirements.pip.txt  -l localhost -rpath $PWD/${ANSIBLE_BASE_DIR}/.galaxy
+  $PWD/${ANSIBLE_PROVISION_DIR}/ansible-provision -p $PWD/${ANSIBLE_BASE_DIR}/playbook.yml --rfile $PWD/${ANSIBLE_BASE_DIR}/requirements.pip.txt  -l localhost -rpath $PWD/${ANSIBLE_BASE_DIR}/.galaxy
 }
 
 function _install_ansible_base() {
