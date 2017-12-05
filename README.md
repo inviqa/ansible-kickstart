@@ -19,10 +19,10 @@ Choose what version of Ansible to install
 `--ansible-version <ansible-version>`
 
 Choose the url for the ansible provisioning script
-`--ansible-provisioning-url`
+`--ansible-provision-url`
 
 Choose the installation directory for the ansible provisioning script
-`--ansible-provisioning-directory`
+`--ansible-provision-directory`
 
 Choose whether to install Ansible base config
 `--install-ansible-base`
@@ -34,4 +34,8 @@ Implies `--install-ansible-base`
 Choose the installation directory for the ansible base configs
 `--ansible-base-directory`
 Implies `--install-ansible-base`
+
+Skip the XCode CommandLineTools installation
+`--skip-xcode-clt`
+Applies only to macOS
 ```

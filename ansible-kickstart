@@ -28,8 +28,11 @@ function _install_ansible_osx() {
 
   easy_install pip 2> $ERROR_LOG;
   pip install virtualenv 2> $ERROR_LOG;
-  touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress ;
-  softwareupdate -i -a 2> $ERROR_LOG;
+  if $INSTALL_XCODE_CTL ; then
+    touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress ;
+    softwareupdate -i -a 2> $ERROR_LOG;
+  fi
+
   pip install ansible 2> $ERROR_LOG;
 }
 
@@ -77,9 +80,9 @@ function _install_ansible() {
 }
 
 
-function _install_ansible_provisioning() {
-  _echo "Installing Inviqa's Ansible Provisioning script from '${ANSIBLE_PROVISIONING_REPO}' into '${ANSIBLE_PROVISION_DIR}'";
-  git clone --quiet "${ANSIBLE_PROVISIONING_REPO}" "${ANSIBLE_PROVISION_DIR}";
+function _install_ansible_provision() {
+  _echo "Installing Inviqa's Ansible Provisioning script from '${ANSIBLE_PROVISION_REPO}' into '${ANSIBLE_PROVISION_DIR}'";
+  git clone --quiet "${ANSIBLE_PROVISION_REPO}" "${ANSIBLE_PROVISION_DIR}";
 }
 
 function _install_ansible_base() {
@@ -117,17 +120,24 @@ function _retrive_args() {
   ERROR_LOG="./error_log"
   INSTALL_ANSIBLE_BASE=false
   ANSIBLE_INSTALLER_URI="https://raw.githubusercontent.com/shrikeh/ansible-virtualenv/master/init.sh"
-  ANSIBLE_PROVISIONING_REPO="git@github.com:inviqa/ansible-provisioning.git"
-  ANSIBLE_PROVISION_DIR="./ansible-provisioning"
+  ANSIBLE_PROVISION_REPO="https://github.com/inviqa/ansible-provision.git"
+  ANSIBLE_PROVISION_DIR="./ansible-provision"
+  ANSIBLE_BASE_REPO="https://github.com/inviqa/ansible-inviqa-base.git"
+  ANSIBLE_BASE_DIR="./ansible"
   INSTALL_ANSIBLE_VENV=false
   ANSIBLE_VERSION="devel"
   ASK_BECOME_PASS=""
+  INSTALL_XCODE_CTL=true
   PROVISION_SCRIPT_DIR="$( dirname "$( which "$0" )" )"
 
   local -a ARGV=("${!1}");
   while [[ "${#}" > 0 ]]; do
     key="${1}";
     case $key in
+      --skip-xcode-clt )
+        INSTALL_XCODE_CTL=false;
+      shift
+      ;;
       --install-ansible-venv )
         INSTALL_ANSIBLE_VENV=true;
       shift
@@ -141,11 +151,11 @@ function _retrive_args() {
         ANSIBLE_VENV="${2}";
       shift
       ;;
-      --ansible-provisioning-url)
-        ANSIBLE_PROVISIONING_REPO="${2}";
+      --ansible-provision-url)
+        ANSIBLE_PROVISION_REPO="${2}";
       shift
       ;;
-      --ansible-provisioning-directory)
+      --ansible-provision-directory)
         ANSIBLE_PROVISION_DIR="${2}";
       shift
       ;;
@@ -155,7 +165,7 @@ function _retrive_args() {
       ;;
       --ansible-base-url)
         INSTALL_ANSIBLE_BASE=true;
-        ANSIBLE_PROVISIONING_REPO="${2}";
+        ANSIBLE_PROVISION_REPO="${2}";
       shift
       ;;
       --ansible-base-directory)
@@ -180,5 +190,5 @@ if [ $INSTALL_ANSIBLE_VENV = true ];then
 else
   _install_ansible;
 fi
-_install_ansible_provisioning
+_install_ansible_provision
 _install_ansible_base
