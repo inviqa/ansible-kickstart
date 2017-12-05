@@ -7,6 +7,7 @@ curl --silent --show-error https://raw.githubusercontent.com/inviqa/ansible-kick
 ```
 
 # Parameters (optional)
+```
 Choose whether installing a VirtualEnv
 `--install-ansible-venv <true|false>`
 
@@ -33,3 +34,4 @@ Implies `--install-ansible-base`
 Choose the installation directory for the ansible base configs
 `--ansible-base-directory`
 Implies `--install-ansible-base`
+```

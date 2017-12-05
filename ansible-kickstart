@@ -26,12 +26,11 @@ function _install_ansible_venv(){
 
 function _install_ansible_osx() {
 
-  easy_install pip;
-  pip install virtualenv;
+  easy_install pip 2> $ERROR_LOG;
+  pip install virtualenv 2> $ERROR_LOG;
   touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress ;
-  softwareupdate -i -a;
-  pip install ansible;
-  exit 1
+  softwareupdate -i -a 2> $ERROR_LOG;
+  pip install ansible 2> $ERROR_LOG;
 }
 
 function _install_ansible_linux() {
@@ -115,6 +114,7 @@ function _check_requirements(){
 
 
 function _retrive_args() {
+  ERROR_LOG="./error_log"
   INSTALL_ANSIBLE_BASE=false
   ANSIBLE_INSTALLER_URI="https://raw.githubusercontent.com/shrikeh/ansible-virtualenv/master/init.sh"
   ANSIBLE_PROVISIONING_REPO="git@github.com:inviqa/ansible-provisioning.git"
