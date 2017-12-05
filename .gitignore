@@ -1,0 +1,12 @@
+*~
+*#
+.#*
+\#*#
+.*.sw[a-z]
+*.un~
+
+encrypted_data_bag_secret
+
+# Bundler
+bin/*
+.bundle/*

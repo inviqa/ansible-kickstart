@@ -10,15 +10,7 @@ function _command_exists() {
   command -v "${COMMAND}" >/dev/null 2>&1  || return 1;
 }
 
-function _install_ansible_osx() {
-  easy_install pip;
-  pip install virtualenv;
-  touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress ;
-  softwareupdate -i -a;
-  pip install ansible;
-}
 function _install_ansible_venv(){
-  local ANSIBLE_INSTALLER_URI="https://raw.githubusercontent.com/shrikeh/ansible-virtualenv/master/init.sh";
   local ANSIBLE_CHECKOUT_PATH="./.ansible";
   local ANSIBLE_VENV="venv";
   export PYTHONPATH="${ANSIBLE_CHECKOUT_PATH}/lib"
@@ -29,6 +21,48 @@ function _install_ansible_venv(){
     --venv "${ANSIBLE_VENV}" \
     --branch "${ANSIBLE_VERSION}" \
     --yolo
+
+}
+
+function _install_ansible_osx() {
+
+  easy_install pip;
+  pip install virtualenv;
+  touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress ;
+  softwareupdate -i -a;
+  pip install ansible;
+  exit 1
+}
+
+function _install_ansible_linux() {
+  local YUM_PACKAGE_NAME="python python-devl python-pip openssl-devel"
+  local DEB_PACKAGE_NAME="python2.7 python-dev python-pip libssl-dev"
+
+  easy_install pip;
+  pip install virtualenv;
+  pip install ansible;
+  case _detect_linux_pm in
+    yum*)
+      echo "Installing required YUM packages $YUM_PACKAGE_NAME"
+      yum install -y $YUM_PACKAGE_NAME
+    ;;
+    apt*)
+      echo "Installing required DEB packages $DEB_PACKAGE_NAME"
+      apt-get update
+      apt-get install -y $DEB_PACKAGE_NAME
+    ;;
+    *)        echo "Unknow linux Distro $OSTYPE" ; exit 1;;
+  esac
+}
+
+function _detect_linux_pm() {
+ local DISTRO_LABEL=$(cat /etc/*release | grep ^NAME | tr -d 'NAME="')
+
+ case "$DISTRO_LABEL" in
+   CentOS* | Red* | Fedora*) return yum ;;
+   Ubuntu* | Debian* | Mint* | Mint*) return apt ;;
+   *)        echo "Unknow linux Distro $OSTYPE" ; exit 1;;
+ esac
 
 }
 
@@ -43,37 +77,17 @@ function _install_ansible() {
   esac
 }
 
-function _retrive_args() {
-  INSTALL_ANSIBLE_VENV=false
-  ANSIBLE_VERSION="devel";
-  ASK_BECOME_PASS="";
-  PROVISION_SCRIPT_DIR="$( dirname "$( which "$0" )" )";
 
-  local -a ARGV=("${!1}");
-  while [[ "${#}" > 0 ]]; do
-    key="${1}";
-    case $key in
-      --install-ansible-venv )
-        INSTALL_ANSIBLE_VENV=true;
-        ANSIBLE_VERSION="${2}";
-      shift
-      ;;
-      --ansible-version )
-        INSTALL_ANSIBLE_VENV=true;
-      shift
-      ;;
-      --venv)
-        ANSIBLE_VENV="${2}";
-      shift
-      ;;
-      *)
-              # unknown option
-      ;;
-  esac
-    shift
-  done
-
+function _install_ansible_provisioning() {
+  _echo "Installing Inviqa's Ansible Provisioning script from '${ANSIBLE_PROVISIONING_REPO}' into '${ANSIBLE_PROVISION_DIR}'";
+  git clone --quiet "${ANSIBLE_PROVISIONING_REPO}" "${ANSIBLE_PROVISION_DIR}";
 }
+
+function _install_ansible_base() {
+  _echo "Installing Inviqa's Ansible Base config from '${ANSIBLE_BASE_REPO}' into '${ANSIBLE_BASE_DIR}'";
+  git clone --quiet "${ANSIBLE_BASE_REPO}" "${ANSIBLE_BASE_DIR}";
+}
+
 
 function _check_requirements(){
   EXCEPTION_CAUGHT=false
@@ -99,6 +113,65 @@ function _check_requirements(){
   fi
 }
 
+
+function _retrive_args() {
+  INSTALL_ANSIBLE_BASE=false
+  ANSIBLE_INSTALLER_URI="https://raw.githubusercontent.com/shrikeh/ansible-virtualenv/master/init.sh"
+  ANSIBLE_PROVISIONING_REPO="git@github.com:inviqa/ansible-provisioning.git"
+  ANSIBLE_PROVISION_DIR="./ansible-provisioning"
+  INSTALL_ANSIBLE_VENV=false
+  ANSIBLE_VERSION="devel"
+  ASK_BECOME_PASS=""
+  PROVISION_SCRIPT_DIR="$( dirname "$( which "$0" )" )"
+
+  local -a ARGV=("${!1}");
+  while [[ "${#}" > 0 ]]; do
+    key="${1}";
+    case $key in
+      --install-ansible-venv )
+        INSTALL_ANSIBLE_VENV=true;
+      shift
+      ;;
+      --ansible-version )
+        ANSIBLE_VERSION="${2}";
+      shift
+      ;;
+      --venv)
+        INSTALL_ANSIBLE_VENV=true;
+        ANSIBLE_VENV="${2}";
+      shift
+      ;;
+      --ansible-provisioning-url)
+        ANSIBLE_PROVISIONING_REPO="${2}";
+      shift
+      ;;
+      --ansible-provisioning-directory)
+        ANSIBLE_PROVISION_DIR="${2}";
+      shift
+      ;;
+      --install-ansible-base)
+        INSTALL_ANSIBLE_BASE=true;
+      shift
+      ;;
+      --ansible-base-url)
+        INSTALL_ANSIBLE_BASE=true;
+        ANSIBLE_PROVISIONING_REPO="${2}";
+      shift
+      ;;
+      --ansible-base-directory)
+        INSTALL_ANSIBLE_BASE=true;
+        ANSIBLE_PROVISION_DIR="${2}";
+      shift
+      ;;
+      *)
+              # unknown option
+      ;;
+  esac
+    shift
+  done
+
+}
+
 _retrive_args "${@}";
 _check_requirements;
 
@@ -106,5 +179,6 @@ if [ $INSTALL_ANSIBLE_VENV = true ];then
   _install_ansible_venv;
 else
   _install_ansible;
-  echo "AA"
 fi
+_install_ansible_provisioning
+_install_ansible_base
