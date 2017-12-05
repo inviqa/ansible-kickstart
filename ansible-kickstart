@@ -26,14 +26,14 @@ function _install_ansible_venv(){
 
 function _install_ansible_osx() {
 
-  easy_install pip 2> $ERROR_LOG;
-  pip install virtualenv 2> $ERROR_LOG;
+  sudo easy_install pip 2> $ERROR_LOG;
+  sudo pip install virtualenv 2> $ERROR_LOG;
   if $INSTALL_XCODE_CTL ; then
     touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress ;
     softwareupdate -i -a 2> $ERROR_LOG;
   fi
 
-  pip install ansible 2> $ERROR_LOG;
+  sudo pip install ansible 2> $ERROR_LOG;
 }
 
 function _install_ansible_linux() {
@@ -86,6 +86,12 @@ function _install_ansible_provision() {
   chmod 755 "${ANSIBLE_PROVISION_DIR}/ansible-provision"
 }
 
+function _launch_ansible_provision() {
+  _echo "Running Inviqa's Ansible Provisioning script from '${ANSIBLE_BASE_DIR}'";
+  cd ${ANSIBLE_BASE_DIR};
+  ${ANSIBLE_PROVISION_DIR}/ansible-provision -p playbook.yml -l localhost
+}
+
 function _install_ansible_base() {
   _echo "Installing Inviqa's Ansible Base config from '${ANSIBLE_BASE_REPO}' into '${ANSIBLE_BASE_DIR}'";
   git clone --quiet "${ANSIBLE_BASE_REPO}" "${ANSIBLE_BASE_DIR}";
@@ -129,6 +135,7 @@ function _retrive_args() {
   ANSIBLE_VERSION="devel"
   ASK_BECOME_PASS=""
   INSTALL_XCODE_CTL=true
+  ANSIBLE_PROVISION=true
   PROVISION_SCRIPT_DIR="$( dirname "$( which "$0" )" )"
 
   local -a ARGV=("${!1}");
@@ -137,6 +144,10 @@ function _retrive_args() {
     case $key in
       --skip-xcode-clt )
         INSTALL_XCODE_CTL=false;
+      shift
+      ;;
+      --skip-provision )
+        ANSIBLE_PROVISION=false;
       shift
       ;;
       --install-ansible-venv )
@@ -193,3 +204,7 @@ else
 fi
 _install_ansible_provision
 _install_ansible_base
+
+if $ANSIBLE_PROVISION;then
+  _launch_ansible_provision;
+fi
