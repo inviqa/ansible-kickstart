@@ -80,8 +80,8 @@ function _install_ansible_provision() {
 function _launch_ansible_provision() {
 
   _echo "Running Inviqa's Ansible Provisioning script from '${ANSIBLE_BASE_DIR}'";
-  _echo "${ANSIBLE_PROVISION_DIR}/ansible-provision -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy -force-galaxy ${ANSIBLE_TAGS} -K"
-  ${ANSIBLE_PROVISION_DIR}/ansible-provision -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy --force-galaxy ${ANSIBLE_TAGS} -K
+  _echo "${ANSIBLE_PROVISION_DIR}/ansible-provision -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy --force-galaxy ${ANSIBLE_TAGS} -K $ANSIBLE_DEBUG"
+  ${ANSIBLE_PROVISION_DIR}/ansible-provision -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy --force-galaxy ${ANSIBLE_TAGS} -K $ANSIBLE_DEBUG
 }
 
 function _install_ansible_base() {
@@ -120,6 +120,8 @@ function _check_requirements(){
 
 
 function _retrive_args() {
+  DEBUG=false
+  ANSIBLE_DEBUG=""
   ERROR_LOG="./error_log"
   PURGE_ANSIBLE_DIRS=false
   ANSIBLE_TAGS=""
@@ -138,19 +140,7 @@ function _retrive_args() {
   while [[ "${#}" > 0 ]]; do
     key="${1}";
     case $key in
-      --purge-ansible-dirs )
-        PURGE_ANSIBLE_DIRS=true;
-      shift
-      ;;
-      --skip-xcode-clt )
-        INSTALL_XCODE_CTL=false;
-      shift
-      ;;
-      --skip-provision )
-        ANSIBLE_PROVISION=false;
-      shift
-      ;;
-      --ansible-version )
+      --ansible-version)
         ANSIBLE_VERSION="${2}";
       shift
       ;;
@@ -177,8 +167,21 @@ function _retrive_args() {
       shift
       ;;
       -t|--tags)
-        ANSIBLE_TAGS="-t ${2}"
+        ANSIBLE_TAGS="-t ${2}";
       shift
+      ;;
+      --debug)
+        DEBUG=true;
+        ANSIBLE_DEBUG="--debug"
+      ;;
+      --purge-ansible-dirs)
+        PURGE_ANSIBLE_DIRS=true;
+      ;;
+      --skip-xcode-clt)
+        INSTALL_XCODE_CTL=false;
+      ;;
+      --skip-provision)
+        ANSIBLE_PROVISION=false;
       ;;
       *)
               # unknown option
@@ -186,6 +189,25 @@ function _retrive_args() {
   esac
     shift
   done
+
+  if $DEBUG; then
+    _echo "DEBUG=$DEBUG
+ANSIBLE_DEBUG=$ANSIBLE_DEBUG
+PURGE_ANSIBLE_DIRS=$PURGE_ANSIBLE_DIRS
+INSTALL_XCODE_CTL=$INSTALL_XCODE_CTL
+ANSIBLE_PROVISION=$ANSIBLE_PROVISION
+ANSIBLE_VERSION=$ANSIBLE_VERSION
+ANSIBLE_PROVISION_REPO=$ANSIBLE_PROVISION_REPO
+ANSIBLE_PROVISION_DIR=$ANSIBLE_PROVISION_DIR
+INSTALL_ANSIBLE_BASE=$INSTALL_ANSIBLE_BASE
+INSTALL_ANSIBLE_BASE=$INSTALL_ANSIBLE_BASE
+ANSIBLE_PROVISION_REPO=$ANSIBLE_PROVISION_REPO
+INSTALL_ANSIBLE_BASE=$INSTALL_ANSIBLE_BASE
+ANSIBLE_PROVISION_DIR=$ANSIBLE_PROVISION_DIR
+ANSIBLE_TAGS=$ANSIBLE_TAGS
+";
+fi
+    exit 1
 }
 
 _retrive_args "${@}";
