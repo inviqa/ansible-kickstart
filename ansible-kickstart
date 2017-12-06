@@ -12,9 +12,9 @@ function _command_exists() {
 
 
 function _install_ansible_osx() {
-  sudo -v
   sudo easy_install pip 2> $ERROR_LOG;
   sudo pip install virtualenv 2> $ERROR_LOG;
+  _echo "INSTALL_XCODE_CTL: $INSTALL_XCODE_CTL"
   if $INSTALL_XCODE_CTL ; then
     touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress ;
     softwareupdate -i -a 2> $ERROR_LOG;
@@ -78,8 +78,6 @@ function _install_ansible_provision() {
 }
 
 function _launch_ansible_provision() {
-
-  sudo -v
 
   _echo "Running Inviqa's Ansible Provisioning script from '${ANSIBLE_BASE_DIR}'";
   _echo "${ANSIBLE_PROVISION_DIR}/ansible-provision -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy -force-galaxy ${ANSIBLE_TAGS} -K"
