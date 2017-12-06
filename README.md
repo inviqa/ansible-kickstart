@@ -35,4 +35,7 @@ Applies only to macOS
 
 Do not run `ansible-provision`
 `--skip-provision`
+
+Remove pre-existing `ansible` and `ansible-provision` directories
+--purge-ansible-dirs`
 ```

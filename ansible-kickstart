@@ -68,6 +68,10 @@ function _install_ansible() {
 
 
 function _install_ansible_provision() {
+  if $PURGE_ANSIBLE_DIRS && [[ -d ${ANSIBLE_PROVISION_DIR} ]]; then
+    _echo "Removing pre-existing ${ANSIBLE_PROVISION_DIR} directory"
+    rm -rf ${ANSIBLE_PROVISION_DIR}
+  fi
   _echo "Installing Inviqa's Ansible Provisioning script from '${ANSIBLE_PROVISION_REPO}' into '${ANSIBLE_PROVISION_DIR}'";
   git clone --quiet "${ANSIBLE_PROVISION_REPO}" "${ANSIBLE_PROVISION_DIR}";
   chmod 755 "${ANSIBLE_PROVISION_DIR}/ansible-provision"
@@ -83,6 +87,10 @@ function _launch_ansible_provision() {
 }
 
 function _install_ansible_base() {
+  if $PURGE_ANSIBLE_DIRS && [[ -d ${ANSIBLE_BASE_DIR} ]]; then
+    _echo "Removing pre-existing ${ANSIBLE_BASE_DIR} directory"
+    rm -rf ${ANSIBLE_BASE_DIR}
+  fi
   _echo "Installing Inviqa's Ansible Base config from '${ANSIBLE_BASE_REPO}' into '${ANSIBLE_BASE_DIR}'";
   git clone --quiet "${ANSIBLE_BASE_REPO}" "${ANSIBLE_BASE_DIR}";
 }
@@ -115,7 +123,8 @@ function _check_requirements(){
 
 function _retrive_args() {
   ERROR_LOG="./error_log"
-  ANSIBLE_TAGS
+  PURGE_ANSIBLE_DIRS=false
+  ANSIBLE_TAGS=""
   INSTALL_ANSIBLE_BASE=false
   ANSIBLE_PROVISION_REPO="https://github.com/inviqa/ansible-provision.git"
   ANSIBLE_PROVISION_DIR="./ansible-provision"
@@ -131,6 +140,10 @@ function _retrive_args() {
   while [[ "${#}" > 0 ]]; do
     key="${1}";
     case $key in
+      --purge-ansible-dirs )
+        PURGE_ANSIBLE_DIRS=true;
+      shift
+      ;;
       --skip-xcode-clt )
         INSTALL_XCODE_CTL=false;
       shift
