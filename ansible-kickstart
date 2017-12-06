@@ -12,18 +12,15 @@ function _command_exists() {
 
 
 function _install_ansible_osx() {
-
-  if $USE_SUDO; then
-    sudo -v
-  fi
-  $SUDO easy_install pip 2> $ERROR_LOG;
-  $SUDO pip install virtualenv 2> $ERROR_LOG;
+  sudo -v
+  sudo easy_install pip 2> $ERROR_LOG;
+  sudo pip install virtualenv 2> $ERROR_LOG;
   if $INSTALL_XCODE_CTL ; then
     touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress ;
     softwareupdate -i -a 2> $ERROR_LOG;
   fi
 
-  $SUDO pip install ansible 2> $ERROR_LOG;
+  sudo pip install ansible 2> $ERROR_LOG;
 }
 
 function _install_ansible_linux() {
@@ -78,16 +75,11 @@ function _install_ansible_provision() {
 
 function _launch_ansible_provision() {
 
-  if $USE_SUDO; then
-    # sudo is revalidated so that the ansible roles requiring it won't prompt for the password
-    sudo -v
-  fi
+  sudo -v
 
   _echo "Running Inviqa's Ansible Provisioning script from '${ANSIBLE_BASE_DIR}'";
-  _echo "Test1"
-  _echo "${ANSIBLE_PROVISION_DIR}/ansible-provision -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy -K"
-  ${ANSIBLE_PROVISION_DIR}/ansible-provision -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy -K
-  _echo "Test2"
+  _echo "${ANSIBLE_PROVISION_DIR}/ansible-provision -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy -force-galaxy -K"
+  ${ANSIBLE_PROVISION_DIR}/ansible-provision -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy --force-galaxy -K
 }
 
 function _install_ansible_base() {
@@ -122,7 +114,6 @@ function _check_requirements(){
 
 
 function _retrive_args() {
-  USE_SUDO=true
   ERROR_LOG="./error_log"
   INSTALL_ANSIBLE_BASE=false
   ANSIBLE_PROVISION_REPO="https://github.com/inviqa/ansible-provision.git"
@@ -139,10 +130,6 @@ function _retrive_args() {
   while [[ "${#}" > 0 ]]; do
     key="${1}";
     case $key in
-      --no-sudo )
-        USE_SUDO=false;
-      shift
-      ;;
       --skip-xcode-clt )
         INSTALL_XCODE_CTL=false;
       shift
@@ -183,13 +170,6 @@ function _retrive_args() {
   esac
     shift
   done
-
-  if $USE_SUDO; then
-    SUDO="sudo"
-    sudo -v
-  else
-    SUDO=""
-  fi
 }
 
 _retrive_args "${@}";
