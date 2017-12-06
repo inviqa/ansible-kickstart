@@ -26,14 +26,17 @@ function _install_ansible_venv(){
 
 function _install_ansible_osx() {
 
-  sudo easy_install pip 2> $ERROR_LOG;
-  sudo pip install virtualenv 2> $ERROR_LOG;
+  if $USE_SUDO; then
+    sudo -v
+  fi
+  $SUDO easy_install pip 2> $ERROR_LOG;
+  $SUDO pip install virtualenv 2> $ERROR_LOG;
   if $INSTALL_XCODE_CTL ; then
     touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress ;
     softwareupdate -i -a 2> $ERROR_LOG;
   fi
 
-  sudo pip install ansible 2> $ERROR_LOG;
+  $SUDO pip install ansible 2> $ERROR_LOG;
 }
 
 function _install_ansible_linux() {
@@ -87,9 +90,17 @@ function _install_ansible_provision() {
 }
 
 function _launch_ansible_provision() {
+
+  if $USE_SUDO; then
+    # sudo is revalidated so that the ansible roles requiring it won't prompt for the password
+    sudo -v
+  fi
+
   _echo "Running Inviqa's Ansible Provisioning script from '${ANSIBLE_BASE_DIR}'";
-  echo "$PWD/${ANSIBLE_PROVISION_DIR}/ansible-provision -p $PWD/${ANSIBLE_BASE_DIR}/playbook.yml --rfile $PWD/${ANSIBLE_BASE_DIR}/requirements.pip.txt  -l localhost --rpath $PWD/${ANSIBLE_BASE_DIR}/.galaxy"
-  $PWD/${ANSIBLE_PROVISION_DIR}/ansible-provision -p $PWD/${ANSIBLE_BASE_DIR}/playbook.yml --rfile $PWD/${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath $PWD/${ANSIBLE_BASE_DIR}/.galaxy
+  # echo "$PWD/${ANSIBLE_PROVISION_DIR}/ansible-provision -K -p $PWD/${ANSIBLE_BASE_DIR}/playbook.yml --rfile $PWD/${ANSIBLE_BASE_DIR}/requirements.pip.txt  -l localhost --rpath $PWD/${ANSIBLE_BASE_DIR}/.galaxy"
+  # $PWD/${ANSIBLE_PROVISION_DIR}/ansible-provision -K -p $PWD/${ANSIBLE_BASE_DIR}/playbook.yml --rfile $PWD/${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath $PWD/${ANSIBLE_BASE_DIR}/.galaxy
+  echo "${ANSIBLE_PROVISION_DIR}/ansible-provision -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.pip.txt  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy"
+  ${ANSIBLE_PROVISION_DIR}/ansible-provision -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy
 }
 
 function _install_ansible_base() {
@@ -124,6 +135,7 @@ function _check_requirements(){
 
 
 function _retrive_args() {
+  $USE_SUDO=true
   ERROR_LOG="./error_log"
   INSTALL_ANSIBLE_BASE=false
   ANSIBLE_INSTALLER_URI="https://raw.githubusercontent.com/shrikeh/ansible-virtualenv/master/init.sh"
@@ -142,6 +154,10 @@ function _retrive_args() {
   while [[ "${#}" > 0 ]]; do
     key="${1}";
     case $key in
+      --no-sudo )
+        $USE_SUDO=false;
+      shift
+      ;;
       --skip-xcode-clt )
         INSTALL_XCODE_CTL=false;
       shift
@@ -192,6 +208,12 @@ function _retrive_args() {
     shift
   done
 
+  if $USE_SUDO; then
+    SUDO="sudo"
+    sudo -v
+  else
+    SUDO=""
+  fi
 }
 
 _retrive_args "${@}";

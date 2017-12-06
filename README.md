@@ -38,4 +38,11 @@ Implies `--install-ansible-base`
 Skip the XCode CommandLineTools installation
 `--skip-xcode-clt`
 Applies only to macOS
+
+Do not run `ansible-provision`
+`--skip-provision`
+
+Avoid the use of sudo
+`--no-sudo`
+"sudo" is used for `pip` tasks
 ```
