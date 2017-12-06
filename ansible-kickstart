@@ -87,8 +87,8 @@ function _launch_ansible_provision() {
   # echo "$PWD/${ANSIBLE_PROVISION_DIR}/ansible-provision -K -p $PWD/${ANSIBLE_BASE_DIR}/playbook.yml --rfile $PWD/${ANSIBLE_BASE_DIR}/requirements.pip.txt  -l localhost --rpath $PWD/${ANSIBLE_BASE_DIR}/.galaxy"
   # $PWD/${ANSIBLE_PROVISION_DIR}/ansible-provision -K -p $PWD/${ANSIBLE_BASE_DIR}/playbook.yml --rfile $PWD/${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath $PWD/${ANSIBLE_BASE_DIR}/.galaxy
   _echo "Your password will be request to allow Ansible to run some `sudo` tasks"
-  _echo "${ANSIBLE_PROVISION_DIR}/ansible-provision -K -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.pip.txt  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy"
-  ${ANSIBLE_PROVISION_DIR}/ansible-provision -K -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy
+  _echo "${ANSIBLE_PROVISION_DIR}/ansible-provision -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy -K"
+  ${ANSIBLE_PROVISION_DIR}/ansible-provision -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy -K
 }
 
 function _install_ansible_base() {
