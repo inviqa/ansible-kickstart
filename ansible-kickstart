@@ -135,7 +135,7 @@ function _check_requirements(){
 
 
 function _retrive_args() {
-  $USE_SUDO=true
+  USE_SUDO=true
   ERROR_LOG="./error_log"
   INSTALL_ANSIBLE_BASE=false
   ANSIBLE_INSTALLER_URI="https://raw.githubusercontent.com/shrikeh/ansible-virtualenv/master/init.sh"
@@ -155,7 +155,7 @@ function _retrive_args() {
     key="${1}";
     case $key in
       --no-sudo )
-        $USE_SUDO=false;
+        USE_SUDO=false;
       shift
       ;;
       --skip-xcode-clt )
