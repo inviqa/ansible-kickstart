@@ -10,19 +10,6 @@ function _command_exists() {
   command -v "${COMMAND}" >/dev/null 2>&1  || return 1;
 }
 
-function _install_ansible_venv(){
-  local ANSIBLE_CHECKOUT_PATH="./.ansible";
-  local ANSIBLE_VENV="venv";
-  export PYTHONPATH="${ANSIBLE_CHECKOUT_PATH}/lib"
-
-  _echo "Installing Ansible on host";
-  curl -L --silent "${ANSIBLE_INSTALLER_URI}" | bash -s -- \
-    -d "${ANSIBLE_CHECKOUT_PATH}" \
-    --venv "${ANSIBLE_VENV}" \
-    --branch "${ANSIBLE_VERSION}" \
-    --yolo
-
-}
 
 function _install_ansible_osx() {
 
@@ -99,8 +86,9 @@ function _launch_ansible_provision() {
   _echo "Running Inviqa's Ansible Provisioning script from '${ANSIBLE_BASE_DIR}'";
   # echo "$PWD/${ANSIBLE_PROVISION_DIR}/ansible-provision -K -p $PWD/${ANSIBLE_BASE_DIR}/playbook.yml --rfile $PWD/${ANSIBLE_BASE_DIR}/requirements.pip.txt  -l localhost --rpath $PWD/${ANSIBLE_BASE_DIR}/.galaxy"
   # $PWD/${ANSIBLE_PROVISION_DIR}/ansible-provision -K -p $PWD/${ANSIBLE_BASE_DIR}/playbook.yml --rfile $PWD/${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath $PWD/${ANSIBLE_BASE_DIR}/.galaxy
-  echo "${ANSIBLE_PROVISION_DIR}/ansible-provision -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.pip.txt  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy"
-  ${ANSIBLE_PROVISION_DIR}/ansible-provision -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy
+  _echo "Your password will be request to allow Ansible to run some `sudo` tasks"
+  _echo "${ANSIBLE_PROVISION_DIR}/ansible-provision -K -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.pip.txt  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy"
+  ${ANSIBLE_PROVISION_DIR}/ansible-provision -K -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy
 }
 
 function _install_ansible_base() {
@@ -138,12 +126,10 @@ function _retrive_args() {
   USE_SUDO=true
   ERROR_LOG="./error_log"
   INSTALL_ANSIBLE_BASE=false
-  ANSIBLE_INSTALLER_URI="https://raw.githubusercontent.com/shrikeh/ansible-virtualenv/master/init.sh"
   ANSIBLE_PROVISION_REPO="https://github.com/inviqa/ansible-provision.git"
   ANSIBLE_PROVISION_DIR="./ansible-provision"
   ANSIBLE_BASE_REPO="https://github.com/inviqa/ansible-inviqa-base.git"
   ANSIBLE_BASE_DIR="./ansible"
-  INSTALL_ANSIBLE_VENV=false
   ANSIBLE_VERSION="devel"
   ASK_BECOME_PASS=""
   INSTALL_XCODE_CTL=true
@@ -166,17 +152,8 @@ function _retrive_args() {
         ANSIBLE_PROVISION=false;
       shift
       ;;
-      --install-ansible-venv )
-        INSTALL_ANSIBLE_VENV=true;
-      shift
-      ;;
       --ansible-version )
         ANSIBLE_VERSION="${2}";
-      shift
-      ;;
-      --venv)
-        INSTALL_ANSIBLE_VENV=true;
-        ANSIBLE_VENV="${2}";
       shift
       ;;
       --ansible-provision-url)
@@ -219,11 +196,7 @@ function _retrive_args() {
 _retrive_args "${@}";
 _check_requirements;
 
-if [ $INSTALL_ANSIBLE_VENV = true ];then
-  _install_ansible_venv;
-else
-  _install_ansible;
-fi
+_install_ansible;
 _install_ansible_provision
 _install_ansible_base
 

@@ -8,12 +8,6 @@ curl --silent --show-error https://raw.githubusercontent.com/inviqa/ansible-kick
 
 # Parameters (optional)
 ```
-Choose whether installing a VirtualEnv
-`--install-ansible-venv <true|false>`
-
-Choose where to install the VirtualEnv
-`--venv <dir>`
-Implies `--install-ansible-venv`
 
 Choose what version of Ansible to install
 `--ansible-version <ansible-version>`
