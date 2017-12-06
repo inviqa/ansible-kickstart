@@ -78,8 +78,8 @@ function _launch_ansible_provision() {
   sudo -v
 
   _echo "Running Inviqa's Ansible Provisioning script from '${ANSIBLE_BASE_DIR}'";
-  _echo "${ANSIBLE_PROVISION_DIR}/ansible-provision -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy -force-galaxy -K"
-  ${ANSIBLE_PROVISION_DIR}/ansible-provision -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy --force-galaxy -K
+  _echo "${ANSIBLE_PROVISION_DIR}/ansible-provision -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy -force-galaxy ${ANSIBLE_TAGS} -K"
+  ${ANSIBLE_PROVISION_DIR}/ansible-provision -p ${ANSIBLE_BASE_DIR}/playbook.yml --rfile ${ANSIBLE_BASE_DIR}/requirements.yml  -l localhost --rpath ${ANSIBLE_BASE_DIR}/.galaxy --force-galaxy ${ANSIBLE_TAGS} -K
 }
 
 function _install_ansible_base() {
@@ -115,6 +115,7 @@ function _check_requirements(){
 
 function _retrive_args() {
   ERROR_LOG="./error_log"
+  ANSIBLE_TAGS
   INSTALL_ANSIBLE_BASE=false
   ANSIBLE_PROVISION_REPO="https://github.com/inviqa/ansible-provision.git"
   ANSIBLE_PROVISION_DIR="./ansible-provision"
@@ -162,6 +163,10 @@ function _retrive_args() {
       --ansible-base-directory)
         INSTALL_ANSIBLE_BASE=true;
         ANSIBLE_PROVISION_DIR="${2}";
+      shift
+      ;;
+      -t|--tags)
+        ANSIBLE_TAGS="-t ${2}"
       shift
       ;;
       *)
