@@ -14,7 +14,6 @@ function _command_exists() {
 function _install_ansible_osx() {
   sudo easy_install pip 2> $ERROR_LOG;
   sudo pip install virtualenv 2> $ERROR_LOG;
-  _echo "INSTALL_XCODE_CTL: $INSTALL_XCODE_CTL"
   if $INSTALL_XCODE_CTL ; then
     touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress ;
     softwareupdate -i -a 2> $ERROR_LOG;
