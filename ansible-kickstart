@@ -207,7 +207,6 @@ ANSIBLE_PROVISION_DIR=$ANSIBLE_PROVISION_DIR
 ANSIBLE_TAGS=$ANSIBLE_TAGS
 ";
 fi
-    exit 1
 }
 
 _retrive_args "${@}";
